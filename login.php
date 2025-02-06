@@ -2,14 +2,15 @@
 session_start();
 error_reporting(E_ALL); // Enable error reporting for debugging
 ini_set('display_errors', 1);
+include 'database-connection.php';
 
 // Users array with roles and credentials
-$users = [
-    ["username" => "student1", "password" => "password1", "role" => "student"],
-    ["username" => "teacher1", "password" => "password1", "role" => "teacher"],
-    ["username" => "admin1", "password" => "password1", "role" => "admin"],
-    ["username" => "pos1", "password" => "password1", "role" => "pos"], // New POS role
-];
+// $users = [
+//     ["username" => "student1", "password" => "password1", "role" => "student"],
+//     ["username" => "teacher1", "password" => "password1", "role" => "teacher"],
+//     ["username" => "admin1", "password" => "password1", "role" => "admin"],
+//     ["username" => "pos1", "password" => "password1", "role" => "pos"], // New POS role
+// ];
 
 $errorMessage = ''; // Initialize error message variable
 
@@ -17,17 +18,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']); // Sanitize username
     $password = trim($_POST['password']); // Sanitize password
 
-    // Validate credentials
-    foreach ($users as $user) {
-        if ($user['username'] === $username && $user['password'] === $password) {
-            // Store user data in session
-            $_SESSION['logged_in_user'] = $user;
+    // Query the database for the user
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username = :username AND password = :password");
+    $stmt->bindParam(':username', $username);
+    $stmt->bindParam(':password', $password);
+    $stmt->execute();
+    $user = $stmt->fetch();
+    $_SESSION['logged_in_user'] = $user;
+    header("Location: " . $user['role'] . "-dashboard.php");
+    exit();
 
-            // Redirect to the appropriate dashboard
-            header("Location: " . $user['role'] . "-dashboard.php");
-            exit();
-        }
-    }
+
+    // // Validate credentials
+    // foreach ($users as $user) {
+    //     if ($user['username'] === $username && $user['password'] === $password) {
+    //         // Store user data in session
+    //         $_SESSION['logged_in_user'] = $user;
+
+    //         // Redirect to the appropriate dashboard
+    //         header("Location: " . $user['role'] . "-dashboard.php");
+    //         exit();
+    //     }
+    // }
 
     // If no match found, set error message
     $errorMessage = "Invalid credentials. Please try again.";
@@ -36,6 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,24 +57,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         /* General styles */
-        html, body {
-            height: 100%; /* Ensure full height */
+        html,
+        body {
+            height: 100%;
+            /* Ensure full height */
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: column; /* Use flexbox for layout */
+            flex-direction: column;
+            /* Use flexbox for layout */
             font-family: 'Roboto', sans-serif;
             background-image: url('background3.jpg');
             background-size: cover;
             background-position: center center;
             background-attachment: fixed;
             color: #333;
-            overflow: hidden; /* Prevent scrolling */
+            overflow: hidden;
+            /* Prevent scrolling */
         }
 
         /* Header */
         header {
-            background: rgba(0, 77, 64, 0.7); /* Same green shade as form */
+            background: rgba(0, 77, 64, 0.7);
+            /* Same green shade as form */
             color: #FFFFFF;
             padding: 20px 0;
             display: flex;
@@ -92,7 +110,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         nav ul {
             list-style: none;
             display: flex;
-            gap: 20px; /* Adjusted space between links */
+            gap: 20px;
+            /* Adjusted space between links */
             margin: 0;
             padding: 0;
         }
@@ -113,18 +132,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             justify-content: center;
             align-items: center;
             flex-grow: 1;
-            height: calc(100vh - 100px); /* Adjust height based on header height */
+            height: calc(100vh - 100px);
+            /* Adjust height based on header height */
         }
 
         #login-section {
-            background: rgba(0, 77, 64, 0.7); /* Same color as header */
+            background: rgba(0, 77, 64, 0.7);
+            /* Same color as header */
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
             width: 350px;
             text-align: center;
             animation: slideIn 0.5s ease-in-out forwards;
-            opacity: 0.9; /* Slight transparency to show the background */
+            opacity: 0.9;
+            /* Slight transparency to show the background */
         }
 
         /* Keyframes for slide-in animation */
@@ -133,6 +155,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 transform: translateY(-50px);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -196,6 +219,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             from {
                 opacity: 0;
             }
+
             to {
                 opacity: 1;
             }
@@ -203,7 +227,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         /* Footer styles */
         footer {
-            background: rgba(0, 77, 64, 0.7); /* Same green shade as header */
+            background: rgba(0, 77, 64, 0.7);
+            /* Same green shade as header */
             color: #FFFFFF;
             padding: 20px 0;
             text-align: center;
@@ -238,6 +263,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     </style>
 </head>
+
 <body>
     <!-- Header -->
     <header>
@@ -283,4 +309,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <p>Designed by <a href="https://yourwebsite.com" target="_blank">Group 6</a></p>
     </footer>
 </body>
+
 </html>

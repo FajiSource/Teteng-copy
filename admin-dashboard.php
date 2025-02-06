@@ -1,5 +1,25 @@
+<?php
+session_start();
+include 'database-connection.php';
+$connection = $conn;
+function format_student_id($student_id)
+{
+    return str_pad($student_id, 5, '0', STR_PAD_LEFT);
+}
+function getRedemptionRequests($connection)
+{
+    $stmt = $connection->prepare("SELECT * FROM redeems");
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
+$redemptionRequests = getRedemptionRequests($connection);
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,16 +30,24 @@
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(to right, #43cea2, #185a9d); /* Updated gradient */
+            background: linear-gradient(to right, #43cea2, #185a9d);
             background-size: 400% 400%;
             animation: gradientAnimation 10s ease infinite;
             color: #333;
         }
 
         @keyframes gradientAnimation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         header {
@@ -33,8 +61,15 @@
         }
 
         @keyframes slideDown {
-            0% { transform: translateY(-100%); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
+            0% {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         header img {
@@ -65,8 +100,15 @@
         }
 
         @keyframes fadeIn {
-            0% { opacity: 0; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .container {
@@ -101,11 +143,14 @@
             animation: fadeIn 1.5s ease;
         }
 
-        table, th, td {
+        table,
+        th,
+        td {
             border: 1px solid #ddd;
         }
 
-        th, td {
+        th,
+        td {
             padding: 15px;
             text-align: center;
         }
@@ -169,8 +214,15 @@
         }
 
         @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .modal-content h3 {
@@ -192,6 +244,7 @@
         }
     </style>
 </head>
+
 <body>
     <header>
         <img src="rvm.png" alt="Logo">
@@ -212,18 +265,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <!-- <tr>
                         <td>12345</td>
                         <td>John Doe</td>
                         <td>Grade 10 - Section A</td>
                         <td><button class="info-button" onclick="showInfo('12345', 'John Doe', 'Grade 10 - Section A')">Info</button></td>
-                    </tr>
-                    <tr>
+                    </tr> -->
+                    <!-- <tr>
                         <td>67890</td>
                         <td>Jane Smith</td>
                         <td>Grade 11 - Section B</td>
                         <td><button class="info-button" onclick="showInfo('67890', 'Jane Smith', 'Grade 11 - Section B')">Info</button></td>
-                    </tr>
+                    </tr> -->
+
+                    <?php
+                    foreach ($redemptionRequests as $request) {
+                        echo "<tr>";
+                        echo "<td>" . format_student_id($request['id']) . "</td>";
+                        echo "<td>{$request['name']}</td>";
+                        echo "<td>{$request['grade_section']}</td>";
+                        echo "<td><button class='info-button' onclick=\"showInfo('" . format_student_id($request['id']) . "', '{$request['name']}', '{$request['grade_section']}')\">Info</button></td>";
+                        echo "</tr>";
+                    }
+                    ?>
                 </tbody>
             </table>
         </section>
@@ -257,4 +321,5 @@
         }
     </script>
 </body>
+
 </html>
